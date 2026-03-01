@@ -46,6 +46,9 @@ function DeckDetail() {
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState({ question_type: 'fill_blank', question: '', answer: '', options: '' });
   const [cardError, setCardError] = useState('');
+  const [uploading, setUploading] = useState(false);
+  const [uploadError, setUploadError] = useState('');
+  const [uploadPreview, setUploadPreview] = useState<{ content: string; filename: string; noteId: number } | null>(null);
 
   const loadDeck = async () => {
     try {
@@ -102,6 +105,48 @@ function DeckDetail() {
     try {
       const res = await api(`/api/flashcards/${cardId}`, { method: 'DELETE' });
       if (res.ok) {
+        loadDeck();
+      }
+    } catch {
+      // Silently fail
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploadError('');
+    setUploading(true);
+    setUploadPreview(null);
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    try {
+      const res = await api(`/api/decks/${id}/notes/upload`, {
+        method: 'POST',
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setUploadError(data.error);
+      } else {
+        setUploadPreview({ content: data.content, filename: data.original_filename, noteId: data.id });
+        loadDeck();
+      }
+    } catch {
+      setUploadError('Upload failed. Please try again.');
+    } finally {
+      setUploading(false);
+      e.target.value = '';
+    }
+  };
+
+  const handleDeleteNote = async (noteId: number) => {
+    try {
+      const res = await api(`/api/notes/${noteId}`, { method: 'DELETE' });
+      if (res.ok) {
+        if (uploadPreview?.noteId === noteId) setUploadPreview(null);
         loadDeck();
       }
     } catch {
@@ -293,14 +338,44 @@ function DeckDetail() {
 
         {activeTab === 'notes' && (
           <div className="tab-content">
-            {deck.notes.length === 0 ? (
-              <p className="empty-tab">No notes yet. Upload files to extract content.</p>
+            <label className="upload-btn">
+              {uploading ? 'Uploading...' : 'Upload Notes'}
+              <input
+                type="file"
+                accept=".txt,.pdf,.docx"
+                onChange={handleFileUpload}
+                disabled={uploading}
+                hidden
+              />
+            </label>
+            {uploadError && <div className="auth-error">{uploadError}</div>}
+
+            {uploadPreview && (
+              <div className="upload-preview">
+                <div className="upload-preview-header">
+                  <span className="upload-preview-filename">{uploadPreview.filename}</span>
+                  <button className="upload-preview-close" onClick={() => setUploadPreview(null)}>Dismiss</button>
+                </div>
+                <pre className="upload-preview-content">{uploadPreview.content}</pre>
+              </div>
+            )}
+
+            {deck.notes.length === 0 && !uploadPreview ? (
+              <p className="empty-tab">No notes yet. Upload .txt, .pdf, or .docx files to extract content.</p>
             ) : (
               <div className="notes-list">
                 {deck.notes.map((note) => (
                   <div key={note.id} className="note-item">
                     <span>{note.original_filename || 'Untitled note'}</span>
-                    <span className="note-date">{new Date(note.created_at).toLocaleDateString()}</span>
+                    <div className="note-item-actions">
+                      <span className="note-date">{new Date(note.created_at).toLocaleDateString()}</span>
+                      <button
+                        className="deck-action-btn deck-delete-btn"
+                        onClick={() => handleDeleteNote(note.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
