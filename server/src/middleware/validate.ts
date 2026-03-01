@@ -12,7 +12,7 @@ export function validateRegister(req: Request, res: Response, next: NextFunction
   if (!name || typeof name !== 'string' || name.trim().length < 1) {
     errors.push('Name is required');
   }
-  if (name && name.trim().length > 100) {
+  if (typeof name === 'string' && name.trim().length > 100) {
     errors.push('Name must be 100 characters or less');
   }
 
