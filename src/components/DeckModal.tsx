@@ -164,7 +164,7 @@ export default function DeckModal({ isOpen, onClose, onSaved, deck }: DeckModalP
             <button type="button" className="modal-cancel-btn" onClick={onClose}>
               Cancel
             </button>
-            <button type="submit" className="auth-btn" disabled={loading}>
+            <button type="submit" className="modal-submit-btn" disabled={loading}>
               {loading ? 'Saving...' : deck ? 'Save Changes' : 'Create Deck'}
             </button>
           </div>

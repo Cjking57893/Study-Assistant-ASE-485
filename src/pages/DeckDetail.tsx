@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
+import AppHeader from '../components/AppHeader';
 import './DeckDetail.css';
 
 interface Flashcard {
@@ -39,7 +39,6 @@ const VALID_FLASHCARD_TYPES = ['multiple_choice', 'true_false', 'fill_blank'] as
 function DeckDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
-  const { logout } = useAuth();
   const [deck, setDeck] = useState<DeckData | null>(null);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'flashcards' | 'quizzes' | 'notes'>('flashcards');
@@ -220,19 +219,7 @@ function DeckDetail() {
 
   return (
     <div className="dashboard-page">
-      <header className="dashboard-header">
-        <div className="dashboard-logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-          <span className="logo-icon">📚</span>
-          StudyPal
-        </div>
-        <nav className="dashboard-nav">
-          <button className="nav-link" onClick={() => navigate('/dashboard')}>Decks</button>
-          <button className="nav-link" onClick={() => navigate('/history')}>History</button>
-        </nav>
-        <div className="dashboard-header-right">
-          <button className="dashboard-logout-btn" onClick={logout}>Log Out</button>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="dashboard-content">
         <button className="back-btn" onClick={() => navigate('/dashboard')}>

@@ -71,11 +71,15 @@
   margin-top: 0.5rem;
 }
 
-.modal-cancel-btn {
-  padding: 0.7rem 1.25rem;
+.modal-cancel-btn,
+.modal-submit-btn {
+  padding: 0.7rem 1.5rem;
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
-  font-weight: 500;
+  font-weight: 600;
+}
+
+.modal-cancel-btn {
   color: var(--text-secondary);
   background: var(--bg-primary);
   border: 1px solid var(--border);
@@ -83,4 +87,14 @@
 
 .modal-cancel-btn:hover {
   background: var(--border);
+}
+
+.modal-submit-btn {
+  color: #ffffff;
+  background: var(--primary);
+}
+
+.modal-submit-btn:hover {
+  background: var(--primary-hover);
+  box-shadow: var(--shadow-md);
 }

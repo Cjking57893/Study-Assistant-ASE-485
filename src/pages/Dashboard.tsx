@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
 import DeckModal from '../components/DeckModal';
+import AppHeader from '../components/AppHeader';
 import './Dashboard.css';
 
 interface Deck {
@@ -17,7 +17,6 @@ interface Deck {
 }
 
 function Dashboard() {
-  const { user, logout } = useAuth();
   const navigate = useNavigate();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
@@ -54,22 +53,7 @@ function Dashboard() {
 
   return (
     <div className="dashboard-page">
-      <header className="dashboard-header">
-        <div className="dashboard-logo">
-          <span className="logo-icon">📚</span>
-          StudyPal
-        </div>
-        <nav className="dashboard-nav">
-          <button className="nav-link" onClick={() => navigate('/dashboard')}>Decks</button>
-          <button className="nav-link" onClick={() => navigate('/history')}>History</button>
-        </nav>
-        <div className="dashboard-header-right">
-          <span className="dashboard-user-name">{user?.name || 'User'}</span>
-          <button className="dashboard-logout-btn" onClick={logout}>
-            Log Out
-          </button>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="dashboard-content">
         <div className="dashboard-title-row">

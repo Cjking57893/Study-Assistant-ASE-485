@@ -1,7 +1,9 @@
 import { Router, Request, Response } from 'express';
 import multer from 'multer';
-import pdfParse from 'pdf-parse';
-import mammoth from 'mammoth';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
+const pdfParse = require('pdf-parse');
+const mammoth = require('mammoth');
 import pool from '../config/db.js';
 
 const router = Router();

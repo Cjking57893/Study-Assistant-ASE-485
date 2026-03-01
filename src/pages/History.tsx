@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
 import { api } from '../utils/api';
+import AppHeader from '../components/AppHeader';
 import './History.css';
 
 interface Session {
@@ -14,7 +14,6 @@ interface Session {
 }
 
 function History() {
-  const { logout } = useAuth();
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,19 +39,7 @@ function History() {
 
   return (
     <div className="dashboard-page">
-      <header className="dashboard-header">
-        <div className="dashboard-logo" onClick={() => navigate('/dashboard')} style={{ cursor: 'pointer' }}>
-          <span className="logo-icon">📚</span>
-          StudyPal
-        </div>
-        <nav className="dashboard-nav">
-          <button className="nav-link" onClick={() => navigate('/dashboard')}>Decks</button>
-          <button className="nav-link" onClick={() => navigate('/history')}>History</button>
-        </nav>
-        <div className="dashboard-header-right">
-          <button className="dashboard-logout-btn" onClick={logout}>Log Out</button>
-        </div>
-      </header>
+      <AppHeader />
 
       <main className="dashboard-content">
         <h1>Study History</h1>
