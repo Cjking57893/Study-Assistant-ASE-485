@@ -80,6 +80,10 @@ router.post('/decks/:deckId/notes/upload', upload.single('file'), async (req: Re
       res.status(400).json({ error: error.message });
       return;
     }
+    if (error.code === 'LIMIT_FILE_SIZE') {
+      res.status(400).json({ error: 'File is too large. Maximum size is 10 MB.' });
+      return;
+    }
     console.error('Upload note error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
