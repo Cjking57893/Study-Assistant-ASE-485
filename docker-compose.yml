@@ -1,0 +1,19 @@
+version: "3.8"
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: studypal-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: studypal
+      POSTGRES_PASSWORD: studypal_dev_password
+      POSTGRES_DB: studypal
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./server/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  pgdata:
