@@ -7,6 +7,7 @@ import flashcardRoutes from './routes/flashcards.js';
 import quizRoutes from './routes/quizzes.js';
 import sessionRoutes from './routes/sessions.js';
 import noteRoutes from './routes/notes.js';
+import generateRoutes from './routes/generate.js';
 import { authenticateToken } from './middleware/auth.js';
 
 const app = express();
@@ -29,5 +30,6 @@ app.use('/api', authenticateToken, flashcardRoutes);
 app.use('/api', authenticateToken, quizRoutes);
 app.use('/api/sessions', authenticateToken, sessionRoutes);
 app.use('/api', authenticateToken, noteRoutes);
+app.use('/api', authenticateToken, generateRoutes);
 
 export default app;

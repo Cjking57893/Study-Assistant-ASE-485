@@ -280,3 +280,83 @@
   font-family: inherit;
   line-height: 1.6;
 }
+
+.generate-from-note-btn {
+  padding: 0.25rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--accent);
+  background: rgba(0, 206, 201, 0.1);
+  border: none;
+  cursor: pointer;
+}
+
+.generate-from-note-btn:hover {
+  background: rgba(0, 206, 201, 0.2);
+}
+
+.generate-panel {
+  background: var(--bg-card);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-md);
+  padding: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+.generate-panel-title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 1rem;
+}
+
+.generate-options {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+}
+
+.generate-options .form-group {
+  flex: 1;
+  min-width: 150px;
+}
+
+.generate-options select,
+.generate-options input {
+  width: 100%;
+  padding: 0.6rem 0.75rem;
+  border: 2px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-family: inherit;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  box-sizing: border-box;
+}
+
+.generate-options select:focus,
+.generate-options input:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(0, 206, 201, 0.15);
+  outline: none;
+}
+
+.generate-btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #ffffff;
+  background: var(--accent);
+}
+
+.generate-btn:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.generate-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}

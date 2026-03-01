@@ -49,6 +49,13 @@ function DeckDetail() {
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadPreview, setUploadPreview] = useState<{ content: string; filename: string; noteId: number } | null>(null);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState('');
+  const [generateSuccess, setGenerateSuccess] = useState('');
+  const [generateNoteId, setGenerateNoteId] = useState<number | null>(null);
+  const [generateCount, setGenerateCount] = useState(5);
+  const [generateType, setGenerateType] = useState<'flashcards' | 'quiz'>('flashcards');
+  const [quizTitle, setQuizTitle] = useState('');
 
   const loadDeck = async () => {
     try {
@@ -162,6 +169,44 @@ function DeckDetail() {
       }
     } catch {
       // Silently fail
+    }
+  };
+
+  const handleGenerate = async () => {
+    if (!generateNoteId || generating) return;
+    setGenerating(true);
+    setGenerateError('');
+    setGenerateSuccess('');
+
+    try {
+      const endpoint = generateType === 'flashcards'
+        ? `/api/decks/${id}/generate/flashcards`
+        : `/api/decks/${id}/generate/quiz`;
+
+      const body = generateType === 'flashcards'
+        ? { noteId: generateNoteId, count: generateCount }
+        : { noteId: generateNoteId, title: quizTitle || 'Generated Quiz', questionCount: generateCount };
+
+      const res = await api(endpoint, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        const itemCount = generateType === 'flashcards' ? data.flashcards.length : data.questions.length;
+        setGenerateSuccess(`Generated ${itemCount} ${generateType === 'flashcards' ? 'flashcard' : 'quiz question'}${itemCount !== 1 ? 's' : ''}`);
+        setGenerateNoteId(null);
+        setQuizTitle('');
+        loadDeck();
+      } else {
+        const data = await res.json();
+        setGenerateError(data.error);
+      }
+    } catch {
+      setGenerateError('Generation failed. Please try again.');
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -363,22 +408,81 @@ function DeckDetail() {
             {deck.notes.length === 0 && !uploadPreview ? (
               <p className="empty-tab">No notes yet. Upload .txt, .pdf, or .docx files to extract content.</p>
             ) : (
-              <div className="notes-list">
-                {deck.notes.map((note) => (
-                  <div key={note.id} className="note-item">
-                    <span>{note.original_filename || 'Untitled note'}</span>
-                    <div className="note-item-actions">
-                      <span className="note-date">{new Date(note.created_at).toLocaleDateString()}</span>
-                      <button
-                        className="deck-action-btn deck-delete-btn"
-                        onClick={() => handleDeleteNote(note.id)}
-                      >
-                        Delete
-                      </button>
+              <>
+                <div className="notes-list">
+                  {deck.notes.map((note) => (
+                    <div key={note.id} className="note-item">
+                      <span>{note.original_filename || 'Untitled note'}</span>
+                      <div className="note-item-actions">
+                        <button
+                          className="generate-from-note-btn"
+                          onClick={() => setGenerateNoteId(generateNoteId === note.id ? null : note.id)}
+                        >
+                          {generateNoteId === note.id ? 'Cancel' : 'Generate'}
+                        </button>
+                        <span className="note-date">{new Date(note.created_at).toLocaleDateString()}</span>
+                        <button
+                          className="deck-action-btn deck-delete-btn"
+                          onClick={() => handleDeleteNote(note.id)}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
+                  ))}
+                </div>
+
+                {generateNoteId && (
+                  <div className="generate-panel">
+                    <h3 className="generate-panel-title">AI Generate</h3>
+                    {generateError && <div className="auth-error">{generateError}</div>}
+                    {generateSuccess && <div className="auth-success">{generateSuccess}</div>}
+                    <div className="generate-options">
+                      <div className="form-group">
+                        <label htmlFor="generate-type">Type</label>
+                        <select
+                          id="generate-type"
+                          value={generateType}
+                          onChange={(e) => setGenerateType(e.target.value as 'flashcards' | 'quiz')}
+                        >
+                          <option value="flashcards">Flashcards</option>
+                          <option value="quiz">Quiz</option>
+                        </select>
+                      </div>
+                      <div className="form-group">
+                        <label htmlFor="generate-count">Count</label>
+                        <input
+                          id="generate-count"
+                          type="number"
+                          min={1}
+                          max={20}
+                          value={generateCount}
+                          onChange={(e) => setGenerateCount(Number(e.target.value))}
+                        />
+                      </div>
+                      {generateType === 'quiz' && (
+                        <div className="form-group">
+                          <label htmlFor="quiz-title">Quiz Title</label>
+                          <input
+                            id="quiz-title"
+                            type="text"
+                            value={quizTitle}
+                            onChange={(e) => setQuizTitle(e.target.value)}
+                            placeholder="Generated Quiz"
+                          />
+                        </div>
+                      )}
+                    </div>
+                    <button
+                      className="generate-btn"
+                      onClick={handleGenerate}
+                      disabled={generating}
+                    >
+                      {generating ? 'Generating...' : `Generate ${generateType === 'flashcards' ? 'Flashcards' : 'Quiz'}`}
+                    </button>
                   </div>
-                ))}
-              </div>
+                )}
+              </>
             )}
           </div>
         )}
