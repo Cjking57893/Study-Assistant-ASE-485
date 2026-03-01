@@ -9,11 +9,13 @@ function Register() {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [error, setError] = useState('');
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     if (password !== confirmPassword) {
-      alert('Passwords do not match');
+      setError('Passwords do not match');
       return;
     }
     try {
@@ -24,14 +26,14 @@ function Register() {
       });
       const data = await res.json();
       if (!res.ok) {
-        alert(data.error);
+        setError(data.error);
         return;
       }
       localStorage.setItem('accessToken', data.accessToken);
       localStorage.setItem('refreshToken', data.refreshToken);
       // TODO: Navigate to dashboard after registration
     } catch {
-      alert('Network error. Is the server running?');
+      setError('Network error. Is the server running?');
     }
   };
 
@@ -45,6 +47,8 @@ function Register() {
           </div>
           <p className="auth-subtitle">Create your account and start studying smarter.</p>
         </div>
+
+        {error && <div className="auth-error">{error}</div>}
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
