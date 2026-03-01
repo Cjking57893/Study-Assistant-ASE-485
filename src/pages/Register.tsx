@@ -10,11 +10,15 @@ function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const navigate = useNavigate();
+
+  const REDIRECT_DELAY_MS = 1500;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     if (password !== confirmPassword) {
       setError('Passwords do not match');
       return;
@@ -30,8 +34,8 @@ function Register() {
         setError(data.error);
         return;
       }
-      alert('Account created successfully!');
-      navigate('/login');
+      setSuccess('Account created successfully! Redirecting to login...');
+      setTimeout(() => navigate('/login'), REDIRECT_DELAY_MS);
     } catch {
       setError('Network error. Is the server running?');
     }
@@ -49,6 +53,7 @@ function Register() {
         </div>
 
         {error && <div className="auth-error">{error}</div>}
+        {success && <div className="auth-success">{success}</div>}
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
