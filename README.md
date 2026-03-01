@@ -65,6 +65,42 @@ This project aims to address these issues by providing an intelligent study assi
 
   We have 6 features and 16 requirements.
 
+## Getting Started (Dev Environment)
+
+### Prerequisites
+- Node.js
+- Docker Desktop
+
+### Steps
+1. Clone the repository
+2. Install frontend dependencies
+   ```
+   npm install
+   ```
+3. Install backend dependencies
+   ```
+   cd server
+   npm install
+   ```
+4. Set up the server environment variables
+   ```
+   cp server/.env.example server/.env
+   ```
+   Then update `JWT_SECRET` in `server/.env` to a random string
+5. Start the PostgreSQL database
+   ```
+   docker-compose up -d
+   ```
+6. Start the backend (from the `server/` directory)
+   ```
+   npm run dev
+   ```
+7. Start the frontend (from the project root, in a separate terminal)
+   ```
+   npm run dev
+   ```
+8. Open `http://localhost:5173` in your browser
+
 ## Tests
 
 ### Acceptance Tests
