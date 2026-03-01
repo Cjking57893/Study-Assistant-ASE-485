@@ -1,6 +1,12 @@
 import express from 'express';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
+import categoryRoutes from './routes/categories.js';
+import deckRoutes from './routes/decks.js';
+import flashcardRoutes from './routes/flashcards.js';
+import quizRoutes from './routes/quizzes.js';
+import sessionRoutes from './routes/sessions.js';
+import { authenticateToken } from './middleware/auth.js';
 
 const app = express();
 
@@ -15,5 +21,11 @@ app.use('/api/auth', authRoutes);
 app.get('/api/health', (_req, res) => {
   res.json({ status: 'ok' });
 });
+
+app.use('/api/categories', authenticateToken, categoryRoutes);
+app.use('/api/decks', authenticateToken, deckRoutes);
+app.use('/api', authenticateToken, flashcardRoutes);
+app.use('/api', authenticateToken, quizRoutes);
+app.use('/api/sessions', authenticateToken, sessionRoutes);
 
 export default app;

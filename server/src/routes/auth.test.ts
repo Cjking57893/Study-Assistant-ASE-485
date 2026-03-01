@@ -503,9 +503,9 @@ describe('GET /api/health', () => {
 });
 
 describe('Unknown routes', () => {
-  it('returns 404 for unmatched routes', async () => {
+  it('returns 401 for unmatched API routes without auth', async () => {
     const res = await request(app).get('/api/auth/nonexistent');
 
-    expect(res.status).toBe(404);
+    expect(res.status).toBe(401);
   });
 });
