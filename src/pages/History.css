@@ -53,11 +53,11 @@
 }
 
 .score-good {
-  color: #16a34a;
-  background: #f0fdf4;
+  color: var(--success);
+  background: var(--success-bg);
 }
 
 .score-low {
-  color: #dc2626;
-  background: #fef2f2;
+  color: var(--error);
+  background: var(--error-bg);
 }

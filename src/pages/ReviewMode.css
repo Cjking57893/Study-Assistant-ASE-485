@@ -137,24 +137,24 @@
 
 .review-option:hover:not(:disabled) {
   border-color: var(--primary);
-  background: rgba(58, 155, 213, 0.05);
+  background: var(--primary-alpha-5);
 }
 
 .review-option.selected {
   border-color: var(--primary);
-  background: rgba(58, 155, 213, 0.1);
+  background: var(--primary-alpha-10);
 }
 
 .review-option.correct {
   border-color: var(--success);
-  background: rgba(0, 184, 148, 0.1);
+  background: var(--success-light);
   color: var(--success);
 }
 
 .review-option.incorrect {
-  border-color: #e74c3c;
-  background: rgba(231, 76, 60, 0.1);
-  color: #e74c3c;
+  border-color: var(--error);
+  background: var(--error-light);
+  color: var(--error);
 }
 
 .review-option:disabled {
@@ -177,20 +177,14 @@
   box-sizing: border-box;
 }
 
-.review-fill-input:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(58, 155, 213, 0.15);
-  outline: none;
-}
-
 .review-fill-input.correct {
   border-color: var(--success);
-  background: rgba(0, 184, 148, 0.05);
+  background: var(--success-bg);
 }
 
 .review-fill-input.incorrect {
-  border-color: #e74c3c;
-  background: rgba(231, 76, 60, 0.05);
+  border-color: var(--error);
+  background: var(--error-bg);
 }
 
 .review-submit-btn {
@@ -231,13 +225,27 @@
   filter: brightness(0.9);
 }
 
+.review-override-btn {
+  padding: 0.75rem 2rem;
+  border-radius: var(--radius-sm);
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--warning);
+  background: none;
+  border: 2px solid var(--warning);
+}
+
+.review-override-btn:hover {
+  background: rgba(243, 156, 18, 0.1);
+}
+
 .review-incorrect-btn {
   padding: 0.75rem 2rem;
   border-radius: var(--radius-sm);
   font-size: 1rem;
   font-weight: 600;
   color: #ffffff;
-  background: #e74c3c;
+  background: var(--error);
 }
 
 .review-incorrect-btn:hover {
@@ -281,11 +289,11 @@
 }
 
 .review-score-circle[data-score='ok'] {
-  border-color: #f39c12;
+  border-color: var(--warning);
 }
 
 .review-score-circle[data-score='low'] {
-  border-color: #e74c3c;
+  border-color: var(--error);
 }
 
 .review-score-number {

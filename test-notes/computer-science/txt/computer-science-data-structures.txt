@@ -1,0 +1,51 @@
+Data Structures and Algorithms
+
+A data structure is a way of organizing and storing data for efficient access and modification.
+
+Arrays:
+- Fixed-size, contiguous block of memory.
+- Access by index is O(1) constant time.
+- Insertion and deletion at arbitrary positions is O(n) because elements must be shifted.
+- Searching an unsorted array is O(n). Searching a sorted array with binary search is O(log n).
+
+Linked Lists:
+- A sequence of nodes where each node contains data and a pointer to the next node.
+- Singly linked list: Each node points to the next node only.
+- Doubly linked list: Each node points to both the next and previous nodes.
+- Insertion and deletion at the head is O(1).
+- Searching is O(n) because you must traverse from the head.
+- No random access — cannot jump to an index directly.
+
+Stacks:
+- Last In, First Out (LIFO) data structure.
+- Operations: push (add to top), pop (remove from top), peek (view top without removing).
+- All operations are O(1).
+- Use cases: function call stack, undo operations, expression evaluation, backtracking algorithms.
+
+Queues:
+- First In, First Out (FIFO) data structure.
+- Operations: enqueue (add to back), dequeue (remove from front).
+- All operations are O(1) with proper implementation.
+- Use cases: task scheduling, breadth-first search, print queue, message queues.
+
+Hash Tables:
+- Stores key-value pairs using a hash function to compute an index.
+- Average case: O(1) for insertion, deletion, and lookup.
+- Worst case: O(n) when many collisions occur.
+- Collision resolution: chaining (linked lists at each index) or open addressing (probing).
+- Load factor = number of entries / number of buckets. Rehashing occurs when load factor exceeds a threshold.
+
+Binary Trees:
+- Each node has at most two children: left and right.
+- Binary Search Tree (BST): Left child < parent < right child.
+- BST operations (search, insert, delete) are O(log n) average, O(n) worst case (degenerate tree).
+- Tree traversals: in-order (left, root, right), pre-order (root, left, right), post-order (left, right, root).
+- Balanced BSTs (AVL trees, Red-Black trees) guarantee O(log n) operations.
+
+Big O Notation:
+- O(1): Constant time — does not depend on input size.
+- O(log n): Logarithmic — binary search, balanced tree operations.
+- O(n): Linear — simple loop through all elements.
+- O(n log n): Linearithmic — efficient sorting algorithms (merge sort, quicksort average case).
+- O(n^2): Quadratic — nested loops, bubble sort, insertion sort.
+- O(2^n): Exponential — recursive algorithms without memoization, subset generation.

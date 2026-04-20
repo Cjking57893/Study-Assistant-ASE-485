@@ -31,37 +31,18 @@
   gap: 1rem;
 }
 
-.modal-card textarea {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border);
-  border-radius: var(--radius-sm);
-  font-size: 0.95rem;
-  font-family: inherit;
-  color: var(--text-primary);
-  background: var(--bg-card);
-  resize: vertical;
-}
-
-.modal-card textarea:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(58, 155, 213, 0.15);
-  outline: none;
-}
-
+.modal-card textarea,
 .modal-card select {
   padding: 0.75rem 1rem;
   border: 2px solid var(--border);
   border-radius: var(--radius-sm);
   font-size: 0.95rem;
-  font-family: inherit;
   color: var(--text-primary);
   background: var(--bg-card);
 }
 
-.modal-card select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(58, 155, 213, 0.15);
-  outline: none;
+.modal-card textarea {
+  resize: vertical;
 }
 
 .modal-actions {
@@ -97,4 +78,134 @@
 .modal-submit-btn:hover {
   background: var(--primary-hover);
   box-shadow: var(--shadow-md);
+}
+
+/* Category management */
+.category-manage-toggle {
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--primary);
+  background: none;
+  padding: 0;
+  margin-left: 0.5rem;
+}
+
+.category-manage-toggle:hover {
+  color: var(--primary-hover);
+}
+
+.category-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 0.5rem;
+  margin-top: 0.4rem;
+}
+
+.category-add-row {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.category-add-row input {
+  flex: 1;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.category-manage-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+.category-manage-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.4rem 0.5rem;
+  border-radius: 4px;
+}
+
+.category-manage-item:hover {
+  background: var(--bg-primary);
+}
+
+.category-name {
+  font-size: 0.9rem;
+  color: var(--text-primary);
+}
+
+.category-actions {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.category-edit-btn,
+.category-delete-btn {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  background: none;
+  color: var(--text-muted);
+}
+
+.category-edit-btn:hover {
+  color: var(--primary);
+  background: var(--primary-alpha-10);
+}
+
+.category-delete-btn:hover {
+  color: var(--error);
+  background: var(--error-bg);
+}
+
+.category-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  width: 100%;
+}
+
+.category-edit-row input {
+  flex: 1;
+  padding: 0.3rem 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  font-size: 0.85rem;
+  color: var(--text-primary);
+}
+
+.category-save-btn,
+.category-cancel-btn {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+}
+
+.category-save-btn {
+  color: var(--success);
+  background: var(--success-bg);
+}
+
+.category-save-btn:hover {
+  background: var(--success-light);
+}
+
+.category-cancel-btn {
+  color: var(--text-muted);
+  background: none;
+}
+
+.category-cancel-btn:hover {
+  color: var(--text-secondary);
 }

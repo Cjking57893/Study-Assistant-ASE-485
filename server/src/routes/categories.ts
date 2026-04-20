@@ -27,8 +27,8 @@ router.post('/', validateCategory, async (req: Request, res: Response): Promise<
       [req.user!.userId, name]
     );
     res.status(201).json(result.rows[0]);
-  } catch (error: any) {
-    if (error.code === '23505') {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'code' in error && (error as { code: string }).code === '23505') {
       res.status(409).json({ error: 'A category with this name already exists' });
       return;
     }
@@ -50,8 +50,8 @@ router.put('/:id', validateCategory, async (req: Request, res: Response): Promis
       return;
     }
     res.json(result.rows[0]);
-  } catch (error: any) {
-    if (error.code === '23505') {
+  } catch (error: unknown) {
+    if (error instanceof Error && 'code' in error && (error as { code: string }).code === '23505') {
       res.status(409).json({ error: 'A category with this name already exists' });
       return;
     }

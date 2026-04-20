@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
+import { api } from '../utils/api';
 import './Login.css';
 
 function Login() {
@@ -16,9 +17,8 @@ function Login() {
     e.preventDefault();
     setError('');
     try {
-      const res = await fetch('/api/auth/login', {
+      const res = await api('/api/auth/login', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
       });
       const data = await res.json();
@@ -44,7 +44,7 @@ function Login() {
           <p className="auth-subtitle">Welcome back! Sign in to continue studying.</p>
         </div>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && <div className="feedback-error">{error}</div>}
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -92,7 +92,7 @@ function Login() {
             <a href="#" className="forgot-password">Forgot password?</a>
           </div>
 
-          <button type="submit" className="auth-btn">Sign In</button>
+          <button type="submit" className="btn-primary auth-btn">Sign In</button>
         </form>
 
         <div className="auth-footer">

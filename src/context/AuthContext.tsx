@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 
 interface User {
@@ -19,17 +19,10 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(() => {
     const stored = localStorage.getItem('user');
-    return stored ? JSON.parse(stored) : null;
+    const token = localStorage.getItem('accessToken');
+    return stored && token ? JSON.parse(stored) : null;
   });
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const stored = localStorage.getItem('user');
-    const token = localStorage.getItem('accessToken');
-    if (stored && token) {
-      setUser(JSON.parse(stored));
-    }
-  }, []);
 
   const login = (accessToken: string, refreshToken: string, userData: User) => {
     localStorage.setItem('accessToken', accessToken);
@@ -63,6 +56,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   );
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useAuth() {
   const context = useContext(AuthContext);
   if (!context) {

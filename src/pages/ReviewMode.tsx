@@ -1,15 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
+import type { Flashcard } from '../types';
 import './ReviewMode.css';
-
-interface Flashcard {
-  id: number;
-  question_type: string;
-  question: string;
-  answer: string;
-  options: string[] | null;
-}
 
 interface DeckInfo {
   id: number;
@@ -103,6 +96,12 @@ function ReviewMode() {
 
   const handleNext = () => {
     advance();
+  };
+
+  const handleOverrideCorrect = () => {
+    const updated = [...results];
+    updated[updated.length - 1] = 'correct';
+    setResults(updated);
   };
 
   const saveSession = async () => {
@@ -247,7 +246,7 @@ function ReviewMode() {
                 <div className="review-fill-blank">
                   <input
                     type="text"
-                    className={`review-fill-input ${submitted ? (userAnswer.toLowerCase().trim() === currentCard.answer.toLowerCase().trim() ? 'correct' : 'incorrect') : ''}`}
+                    className={`review-fill-input ${submitted ? (results[results.length - 1] === 'correct' ? 'correct' : 'incorrect') : ''}`}
                     placeholder="Type your answer..."
                     value={userAnswer}
                     onChange={(e) => !submitted && setUserAnswer(e.target.value)}
@@ -281,9 +280,16 @@ function ReviewMode() {
       {submitted && (
         <div className="review-actions">
           {isInteractive ? (
-            <button className="review-next-btn" onClick={handleNext}>
-              {currentIndex + 1 >= totalCards ? 'Finish' : 'Next'}
-            </button>
+            <>
+              {currentCard.question_type === 'fill_blank' && results[results.length - 1] === 'incorrect' && (
+                <button className="review-override-btn" onClick={handleOverrideCorrect}>
+                  Mark as Correct
+                </button>
+              )}
+              <button className="review-next-btn" onClick={handleNext}>
+                {currentIndex + 1 >= totalCards ? 'Finish' : 'Next'}
+              </button>
+            </>
           ) : (
             <>
               <button className="review-incorrect-btn" onClick={() => handleSelfScore('incorrect')}>

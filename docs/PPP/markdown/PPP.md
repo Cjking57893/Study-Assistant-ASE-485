@@ -26,7 +26,7 @@ StudyPal automates flashcard and quiz creation from existing notes, saving time 
 
 ### Tools
 
-- **DistilGPT-2** LLM for flashcard and question generation via Hugging Face API
+- **Llama 3.3-70B-Instruct** LLM for flashcard and question generation via Hugging Face API
 - **React** for Front End
 - **Node.js + Express** for Back End
 - **PostgreSQL** for Database

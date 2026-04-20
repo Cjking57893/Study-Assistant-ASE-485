@@ -11,7 +11,7 @@ Students today face the challenge of efficiently managing and retaining large am
 This project aims to address these issues by providing an intelligent study assistant that automatically generates flashcards and quizzes from existing notes. With these generated study tools it will help students engage with their material more effectively, saving time and enhancing learning through interactive, personalized tools.
 
 ## Tools
-- DistilGPT-2 LLM for generation of flashcards and questions, going to utilize this through hugging face API
+- Llama 3.3-70B-Instruct LLM for generation of flashcards and questions via Hugging Face API
 - React for Front End
 - Node.js + Express for Back End
 - PostgreSQL for Database

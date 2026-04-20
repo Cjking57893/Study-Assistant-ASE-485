@@ -1,0 +1,29 @@
+Cell Structure and Function
+
+The cell is the basic unit of life. All living organisms are composed of one or more cells.
+
+Prokaryotic vs Eukaryotic Cells:
+- Prokaryotic cells lack a membrane-bound nucleus. Examples include bacteria and archaea.
+- Eukaryotic cells have a membrane-bound nucleus and organelles. Examples include animal cells, plant cells, and fungi.
+
+Key Organelles:
+- Nucleus: Contains DNA and controls cell activities. Surrounded by a double membrane called the nuclear envelope.
+- Mitochondria: The powerhouse of the cell. Produces ATP through cellular respiration. Has its own DNA.
+- Ribosomes: Responsible for protein synthesis. Found free in the cytoplasm or attached to the endoplasmic reticulum.
+- Endoplasmic Reticulum (ER): Rough ER has ribosomes and synthesizes proteins. Smooth ER synthesizes lipids and detoxifies chemicals.
+- Golgi Apparatus: Modifies, packages, and ships proteins and lipids. Often called the "post office" of the cell.
+- Lysosomes: Contain digestive enzymes that break down waste materials and cellular debris.
+- Cell Membrane: A phospholipid bilayer that controls what enters and exits the cell. Semi-permeable.
+- Cytoplasm: Gel-like fluid inside the cell where organelles are suspended.
+
+Plant Cells vs Animal Cells:
+- Plant cells have a rigid cell wall made of cellulose, which provides structural support.
+- Plant cells contain chloroplasts for photosynthesis, which converts sunlight into glucose.
+- Plant cells have a large central vacuole for water storage.
+- Animal cells have centrioles used during cell division.
+- Animal cells lack a cell wall and are more flexible in shape.
+
+Cell Membrane Transport:
+- Passive transport requires no energy: diffusion, osmosis, facilitated diffusion.
+- Active transport requires ATP: sodium-potassium pump, endocytosis, exocytosis.
+- Osmosis is the movement of water across a semi-permeable membrane from high to low concentration.

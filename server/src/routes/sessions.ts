@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import pool from '../config/db.js';
+import { verifyDeckOwnership } from '../utils/deck-ownership.js';
 
 const router = Router();
 
@@ -25,14 +26,7 @@ router.post('/', async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [deck_id, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    if (!await verifyDeckOwnership(deck_id, req.user!.userId, res)) return;
 
     const result = await pool.query(
       'INSERT INTO study_sessions (user_id, deck_id, total_cards, correct) VALUES ($1, $2, $3, $4) RETURNING id, deck_id, total_cards, correct, completed_at',

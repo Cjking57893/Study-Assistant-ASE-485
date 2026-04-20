@@ -22,6 +22,9 @@ export default function DeckModal({ isOpen, onClose, onSaved, deck }: DeckModalP
   const [categories, setCategories] = useState<Category[]>([]);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [editingCategoryId, setEditingCategoryId] = useState<number | null>(null);
+  const [editingCategoryName, setEditingCategoryName] = useState('');
+  const [showCategoryPanel, setShowCategoryPanel] = useState(false);
 
   useEffect(() => {
     if (isOpen) {
@@ -51,29 +54,72 @@ export default function DeckModal({ isOpen, onClose, onSaved, deck }: DeckModalP
     }
   };
 
+  const handleAddCategory = async () => {
+    if (!newCategory.trim()) return;
+    try {
+      const res = await api('/api/categories', {
+        method: 'POST',
+        body: JSON.stringify({ name: newCategory.trim() }),
+      });
+      if (res.ok) {
+        const cat = await res.json();
+        setCategoryId(cat.id.toString());
+        setNewCategory('');
+        loadCategories();
+      } else {
+        const data = await res.json();
+        setError(data.error);
+      }
+    } catch {
+      setError('Failed to create category');
+    }
+  };
+
+  const handleRenameCategory = async (catId: number) => {
+    if (!editingCategoryName.trim()) return;
+    try {
+      const res = await api(`/api/categories/${catId}`, {
+        method: 'PUT',
+        body: JSON.stringify({ name: editingCategoryName.trim() }),
+      });
+      if (res.ok) {
+        setEditingCategoryId(null);
+        setEditingCategoryName('');
+        loadCategories();
+      } else {
+        const data = await res.json();
+        setError(data.error);
+      }
+    } catch {
+      setError('Failed to rename category');
+    }
+  };
+
+  const handleDeleteCategory = async (catId: number) => {
+    try {
+      const res = await api(`/api/categories/${catId}`, { method: 'DELETE' });
+      if (res.ok) {
+        if (categoryId === catId.toString()) setCategoryId('');
+        loadCategories();
+      } else {
+        const data = await res.json();
+        setError(data.error);
+      }
+    } catch {
+      setError('Failed to delete category');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
     try {
-      let finalCategoryId = categoryId ? parseInt(categoryId) : null;
-
-      if (newCategory.trim()) {
-        const catRes = await api('/api/categories', {
-          method: 'POST',
-          body: JSON.stringify({ name: newCategory.trim() }),
-        });
-        if (catRes.ok) {
-          const cat = await catRes.json();
-          finalCategoryId = cat.id;
-        }
-      }
-
       const body = {
         title: title.trim(),
         description: description.trim() || null,
-        category_id: finalCategoryId,
+        category_id: categoryId ? parseInt(categoryId) : null,
       };
 
       const url = deck ? `/api/decks/${deck.id}` : '/api/decks';
@@ -103,7 +149,7 @@ export default function DeckModal({ isOpen, onClose, onSaved, deck }: DeckModalP
       <div className="modal-card" onClick={(e) => e.stopPropagation()}>
         <h2>{deck ? 'Edit Deck' : 'Create Deck'}</h2>
 
-        {error && <div className="auth-error">{error}</div>}
+        {error && <div className="feedback-error">{error}</div>}
 
         <form onSubmit={handleSubmit}>
           <div className="form-group">
@@ -130,34 +176,84 @@ export default function DeckModal({ isOpen, onClose, onSaved, deck }: DeckModalP
           </div>
 
           <div className="form-group">
-            <label htmlFor="deck-category">Category</label>
+            <label htmlFor="deck-category">
+              Category
+              <button
+                type="button"
+                className="category-manage-toggle"
+                onClick={() => setShowCategoryPanel(!showCategoryPanel)}
+              >
+                {showCategoryPanel ? 'Done' : 'Manage'}
+              </button>
+            </label>
+
             <select
               id="deck-category"
               value={categoryId}
-              onChange={(e) => {
-                setCategoryId(e.target.value);
-                if (e.target.value) setNewCategory('');
-              }}
+              onChange={(e) => setCategoryId(e.target.value)}
             >
               <option value="">No category</option>
               {categories.map((cat) => (
                 <option key={cat.id} value={cat.id}>{cat.name}</option>
               ))}
             </select>
-          </div>
 
-          <div className="form-group">
-            <label htmlFor="new-category">Or create new category</label>
-            <input
-              id="new-category"
-              type="text"
-              value={newCategory}
-              onChange={(e) => {
-                setNewCategory(e.target.value);
-                if (e.target.value) setCategoryId('');
-              }}
-              placeholder="New category name"
-            />
+            {showCategoryPanel && (
+              <div className="category-panel">
+                <div className="category-add-row">
+                  <input
+                    type="text"
+                    value={newCategory}
+                    onChange={(e) => setNewCategory(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && (e.preventDefault(), handleAddCategory())}
+                    placeholder="New category name"
+                  />
+                  <button type="button" className="category-save-btn" onClick={handleAddCategory}>Add</button>
+                </div>
+
+                {categories.length > 0 && (
+                  <div className="category-manage-list">
+                    {categories.map((cat) => (
+                      <div key={cat.id} className="category-manage-item">
+                        {editingCategoryId === cat.id ? (
+                          <div className="category-edit-row">
+                            <input
+                              type="text"
+                              value={editingCategoryName}
+                              onChange={(e) => setEditingCategoryName(e.target.value)}
+                              onKeyDown={(e) => e.key === 'Enter' && handleRenameCategory(cat.id)}
+                              autoFocus
+                            />
+                            <button type="button" className="category-save-btn" onClick={() => handleRenameCategory(cat.id)}>Save</button>
+                            <button type="button" className="category-cancel-btn" onClick={() => setEditingCategoryId(null)}>Cancel</button>
+                          </div>
+                        ) : (
+                          <>
+                            <span className="category-name">{cat.name}</span>
+                            <div className="category-actions">
+                              <button
+                                type="button"
+                                className="category-edit-btn"
+                                onClick={() => { setEditingCategoryId(cat.id); setEditingCategoryName(cat.name); }}
+                              >
+                                Rename
+                              </button>
+                              <button
+                                type="button"
+                                className="category-delete-btn"
+                                onClick={() => handleDeleteCategory(cat.id)}
+                              >
+                                Remove
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           <div className="modal-actions">

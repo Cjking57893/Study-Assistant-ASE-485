@@ -2,26 +2,15 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { api } from '../utils/api';
 import AppHeader from '../components/AppHeader';
+import type { Flashcard, Quiz, Note } from '../types';
 import './DeckDetail.css';
 
-interface Flashcard {
+interface QuizQuestion {
   id: number;
   question_type: string;
   question: string;
   answer: string;
   options: string[] | null;
-}
-
-interface Quiz {
-  id: number;
-  title: string;
-  created_at: string;
-}
-
-interface Note {
-  id: number;
-  original_filename: string | null;
-  created_at: string;
 }
 
 interface DeckData {
@@ -44,28 +33,34 @@ function DeckDetail() {
   const [activeTab, setActiveTab] = useState<'flashcards' | 'quizzes' | 'notes'>('flashcards');
   const [showAddCard, setShowAddCard] = useState(false);
   const [newCard, setNewCard] = useState({ question_type: 'fill_blank', question: '', answer: '', options: '' });
+  const [loadError, setLoadError] = useState('');
   const [cardError, setCardError] = useState('');
   const [uploading, setUploading] = useState(false);
   const [uploadError, setUploadError] = useState('');
   const [uploadPreview, setUploadPreview] = useState<{ content: string; filename: string; noteId: number } | null>(null);
   const [generating, setGenerating] = useState(false);
   const [generateError, setGenerateError] = useState('');
-  const [generateSuccess, setGenerateSuccess] = useState('');
   const [generateNoteId, setGenerateNoteId] = useState<number | null>(null);
   const [generateCount, setGenerateCount] = useState(5);
   const [generateType, setGenerateType] = useState<'flashcards' | 'quiz'>('flashcards');
   const [quizTitle, setQuizTitle] = useState('');
+  const [expandedQuizId, setExpandedQuizId] = useState<number | null>(null);
+  const [quizQuestions, setQuizQuestions] = useState<QuizQuestion[]>([]);
+  const [loadingQuiz, setLoadingQuiz] = useState(false);
 
   const loadDeck = async () => {
     try {
+      setLoadError('');
       const res = await api(`/api/decks/${id}`);
       if (res.ok) {
         setDeck(await res.json());
       } else if (res.status === 404) {
         navigate('/dashboard');
+      } else {
+        setLoadError('Failed to load deck');
       }
     } catch {
-      // Silently fail
+      setLoadError('Network error. Is the server running?');
     } finally {
       setLoading(false);
     }
@@ -112,9 +107,11 @@ function DeckDetail() {
       const res = await api(`/api/flashcards/${cardId}`, { method: 'DELETE' });
       if (res.ok) {
         loadDeck();
+      } else {
+        setCardError('Failed to delete flashcard');
       }
     } catch {
-      // Silently fail
+      setCardError('Network error');
     }
   };
 
@@ -154,20 +151,53 @@ function DeckDetail() {
       if (res.ok) {
         if (uploadPreview?.noteId === noteId) setUploadPreview(null);
         loadDeck();
+      } else {
+        setUploadError('Failed to delete note');
       }
     } catch {
-      // Silently fail
+      setUploadError('Network error');
     }
   };
 
+  const [quizError, setQuizError] = useState('');
+
   const handleDeleteQuiz = async (quizId: number) => {
     try {
+      setQuizError('');
       const res = await api(`/api/quizzes/${quizId}`, { method: 'DELETE' });
       if (res.ok) {
         loadDeck();
+      } else {
+        setQuizError('Failed to delete quiz');
       }
     } catch {
-      // Silently fail
+      setQuizError('Network error');
+    }
+  };
+
+  const handleToggleQuiz = async (quizId: number) => {
+    if (expandedQuizId === quizId) {
+      setExpandedQuizId(null);
+      setQuizQuestions([]);
+      return;
+    }
+    setLoadingQuiz(true);
+    setExpandedQuizId(quizId);
+    setQuizQuestions([]);
+    try {
+      const res = await api(`/api/quizzes/${quizId}`);
+      if (res.ok) {
+        const data = await res.json();
+        setQuizQuestions(data.questions);
+      } else {
+        setQuizError('Failed to load quiz questions');
+        setExpandedQuizId(null);
+      }
+    } catch {
+      setQuizError('Network error');
+      setExpandedQuizId(null);
+    } finally {
+      setLoadingQuiz(false);
     }
   };
 
@@ -175,7 +205,6 @@ function DeckDetail() {
     if (!generateNoteId || generating) return;
     setGenerating(true);
     setGenerateError('');
-    setGenerateSuccess('');
 
     try {
       const endpoint = generateType === 'flashcards'
@@ -194,7 +223,8 @@ function DeckDetail() {
       if (res.ok) {
         const data = await res.json();
         const itemCount = generateType === 'flashcards' ? data.flashcards.length : data.questions.length;
-        setGenerateSuccess(`Generated ${itemCount} ${generateType === 'flashcards' ? 'flashcard' : 'quiz question'}${itemCount !== 1 ? 's' : ''}`);
+        const message = `Generated ${itemCount} ${generateType === 'flashcards' ? 'flashcard' : 'quiz question'}${itemCount !== 1 ? 's' : ''}`;
+        alert(message);
         setGenerateNoteId(null);
         setQuizTitle('');
         loadDeck();
@@ -214,7 +244,14 @@ function DeckDetail() {
   }
 
   if (!deck) {
-    return <div className="dashboard-page"><p className="loading-text">Deck not found.</p></div>;
+    return (
+      <div className="dashboard-page">
+        <AppHeader />
+        <main className="dashboard-content">
+          {loadError ? <div className="feedback-error">{loadError}</div> : <p className="loading-text">Deck not found.</p>}
+        </main>
+      </div>
+    );
   }
 
   return (
@@ -231,13 +268,6 @@ function DeckDetail() {
             <h1>{deck.title}</h1>
             {deck.category_name && <span className="deck-category-badge">{deck.category_name}</span>}
             {deck.description && <p className="deck-detail-description">{deck.description}</p>}
-          </div>
-          <div className="deck-detail-actions">
-            {deck.flashcards.length > 0 && (
-              <button className="review-btn" onClick={() => navigate(`/decks/${id}/review`)}>
-                Start Review
-              </button>
-            )}
           </div>
         </div>
 
@@ -264,13 +294,20 @@ function DeckDetail() {
 
         {activeTab === 'flashcards' && (
           <div className="tab-content">
-            <button className="add-item-btn" onClick={() => setShowAddCard(!showAddCard)}>
-              {showAddCard ? 'Cancel' : '+ Add Flashcard'}
-            </button>
+            <div className="tab-content-actions">
+              <button className="add-item-btn" onClick={() => setShowAddCard(!showAddCard)}>
+                {showAddCard ? 'Cancel' : '+ Add Flashcard'}
+              </button>
+              {deck.flashcards.length > 0 && (
+                <button className="review-btn" onClick={() => navigate(`/decks/${id}/review`)}>
+                  Start Review
+                </button>
+              )}
+            </div>
 
             {showAddCard && (
               <form className="add-card-form" onSubmit={handleAddFlashcard}>
-                {cardError && <div className="auth-error">{cardError}</div>}
+                {cardError && <div className="feedback-error">{cardError}</div>}
                 <div className="form-group">
                   <label htmlFor="card-type">Type</label>
                   <select
@@ -315,7 +352,7 @@ function DeckDetail() {
                     />
                   </div>
                 )}
-                <button type="submit" className="auth-btn">Add Flashcard</button>
+                <button type="submit" className="btn-primary">Add Flashcard</button>
               </form>
             )}
 
@@ -345,22 +382,63 @@ function DeckDetail() {
 
         {activeTab === 'quizzes' && (
           <div className="tab-content">
+            {quizError && <div className="feedback-error">{quizError}</div>}
             {deck.quizzes.length === 0 ? (
               <p className="empty-tab">No quizzes yet. Generate them from your notes.</p>
             ) : (
               <div className="quiz-list">
                 {deck.quizzes.map((quiz) => (
-                  <div key={quiz.id} className="quiz-item">
-                    <span>{quiz.title}</span>
-                    <div className="quiz-item-actions">
-                      <span className="quiz-date">{new Date(quiz.created_at).toLocaleDateString()}</span>
-                      <button
-                        className="deck-action-btn deck-delete-btn"
-                        onClick={() => handleDeleteQuiz(quiz.id)}
-                      >
-                        Delete
-                      </button>
+                  <div key={quiz.id} className={`quiz-item-wrapper ${expandedQuizId === quiz.id ? 'expanded' : ''}`}>
+                    <div className="quiz-item" onClick={() => handleToggleQuiz(quiz.id)}>
+                      <span className="quiz-item-title">
+                        <span className={`quiz-expand-icon ${expandedQuizId === quiz.id ? 'open' : ''}`}>&#9656;</span>
+                        {quiz.title}
+                      </span>
+                      <div className="quiz-item-actions">
+                        <button
+                          className="quiz-take-btn"
+                          onClick={(e) => { e.stopPropagation(); navigate(`/quizzes/${quiz.id}/take`); }}
+                        >
+                          Take Quiz
+                        </button>
+                        <span className="quiz-date">{new Date(quiz.created_at).toLocaleDateString()}</span>
+                        <button
+                          className="deck-action-btn deck-delete-btn"
+                          onClick={(e) => { e.stopPropagation(); handleDeleteQuiz(quiz.id); }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
+                    {expandedQuizId === quiz.id && (
+                      <div className="quiz-questions-panel">
+                        {loadingQuiz ? (
+                          <p className="quiz-questions-loading">Loading questions...</p>
+                        ) : quizQuestions.length === 0 ? (
+                          <p className="quiz-questions-loading">No questions found.</p>
+                        ) : (
+                          <div className="quiz-questions-list">
+                            {quizQuestions.map((q, i) => (
+                              <div key={q.id} className="quiz-question-item">
+                                <div className="quiz-question-header">
+                                  <span className="quiz-question-number">Q{i + 1}</span>
+                                  <span className="flashcard-type-badge">{q.question_type.replace('_', ' ')}</span>
+                                </div>
+                                <p className="quiz-question-text">{q.question}</p>
+                                {q.options && (
+                                  <ul className="quiz-question-options">
+                                    {q.options.map((opt, j) => (
+                                      <li key={j} className={opt.toLowerCase().trim() === q.answer.toLowerCase().trim() ? 'correct-option' : ''}>{opt}</li>
+                                    ))}
+                                  </ul>
+                                )}
+                                <p className="quiz-question-answer">Answer: {q.answer}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    )}
                   </div>
                 ))}
               </div>
@@ -380,7 +458,7 @@ function DeckDetail() {
                 hidden
               />
             </label>
-            {uploadError && <div className="auth-error">{uploadError}</div>}
+            {uploadError && <div className="feedback-error">{uploadError}</div>}
 
             {uploadPreview && (
               <div className="upload-preview">
@@ -422,8 +500,11 @@ function DeckDetail() {
                 {generateNoteId && (
                   <div className="generate-panel">
                     <h3 className="generate-panel-title">AI Generate</h3>
-                    {generateError && <div className="auth-error">{generateError}</div>}
-                    {generateSuccess && <div className="auth-success">{generateSuccess}</div>}
+                    <p className="generate-disclaimer">
+                      AI generates questions from up to ~25 pages of your notes.
+                      Questions are based only on the content of your notes.
+                    </p>
+                    {generateError && <div className="feedback-error">{generateError}</div>}
                     <div className="generate-options">
                       <div className="form-group">
                         <label htmlFor="generate-type">Type</label>

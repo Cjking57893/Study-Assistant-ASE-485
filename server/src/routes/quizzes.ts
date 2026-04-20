@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import pool from '../config/db.js';
+import { verifyDeckOwnership } from '../utils/deck-ownership.js';
 
 const VALID_QUIZ_QUESTION_TYPES = ['multiple_choice', 'true_false', 'short_answer'] as const;
 
@@ -8,14 +9,7 @@ const router = Router();
 // GET /api/decks/:deckId/quizzes
 router.get('/decks/:deckId/quizzes', async (req: Request, res: Response): Promise<void> => {
   try {
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
     const result = await pool.query(
       `SELECT q.id, q.title, q.created_at,
@@ -59,14 +53,7 @@ router.post('/decks/:deckId/quizzes', async (req: Request, res: Response): Promi
       }
     }
 
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
     const quizResult = await pool.query(
       'INSERT INTO quizzes (deck_id, title) VALUES ($1, $2) RETURNING id, title, created_at',

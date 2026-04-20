@@ -7,6 +7,7 @@ import Dashboard from './pages/Dashboard';
 import DeckDetail from './pages/DeckDetail';
 import History from './pages/History';
 import ReviewMode from './pages/ReviewMode';
+import QuizMode from './pages/QuizMode';
 
 function App() {
   return (
@@ -18,6 +19,7 @@ function App() {
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/decks/:id" element={<ProtectedRoute><DeckDetail /></ProtectedRoute>} />
           <Route path="/decks/:id/review" element={<ProtectedRoute><ReviewMode /></ProtectedRoute>} />
+          <Route path="/quizzes/:quizId/take" element={<ProtectedRoute><QuizMode /></ProtectedRoute>} />
           <Route path="/history" element={<ProtectedRoute><History /></ProtectedRoute>} />
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

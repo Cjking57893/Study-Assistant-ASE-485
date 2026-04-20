@@ -17,6 +17,7 @@ function History() {
   const navigate = useNavigate();
   const [sessions, setSessions] = useState<Session[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   useEffect(() => {
     const loadSessions = async () => {
@@ -24,9 +25,11 @@ function History() {
         const res = await api('/api/sessions');
         if (res.ok) {
           setSessions(await res.json());
+        } else {
+          setError('Failed to load study history');
         }
       } catch {
-        // Silently fail
+        setError('Network error. Is the server running?');
       } finally {
         setLoading(false);
       }
@@ -43,6 +46,8 @@ function History() {
 
       <main className="dashboard-content">
         <h1>Study History</h1>
+
+        {error && <div className="feedback-error">{error}</div>}
 
         {loading ? (
           <p className="dashboard-placeholder">Loading...</p>

@@ -5,6 +5,7 @@ const require = createRequire(import.meta.url);
 const pdfParse = require('pdf-parse');
 const mammoth = require('mammoth');
 import pool from '../config/db.js';
+import { verifyDeckOwnership } from '../utils/deck-ownership.js';
 
 const router = Router();
 
@@ -15,6 +16,7 @@ const ALLOWED_MIME_TYPES = [
 ] as const;
 
 const MAX_FILE_SIZE_BYTES = 10 * 1024 * 1024; // 10 MB
+const MAX_CONTENT_CHARS = 75000; // ~25 pages at ~3,000 chars/page
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -53,19 +55,17 @@ router.post('/decks/:deckId/notes/upload', upload.single('file'), async (req: Re
       return;
     }
 
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
     const content = await extractText(req.file);
 
     if (!content.trim()) {
       res.status(400).json({ error: 'No text content could be extracted from the file' });
+      return;
+    }
+
+    if (content.trim().length > MAX_CONTENT_CHARS) {
+      res.status(400).json({ error: 'File content exceeds the ~25 page limit. Please split your notes into multiple smaller uploads.' });
       return;
     }
 
@@ -75,12 +75,12 @@ router.post('/decks/:deckId/notes/upload', upload.single('file'), async (req: Re
     );
 
     res.status(201).json(result.rows[0]);
-  } catch (error: any) {
-    if (error.message?.includes('Only .txt')) {
+  } catch (error: unknown) {
+    if (error instanceof Error && error.message?.includes('Only .txt')) {
       res.status(400).json({ error: error.message });
       return;
     }
-    if (error.code === 'LIMIT_FILE_SIZE') {
+    if (error instanceof Error && 'code' in error && (error as { code: string }).code === 'LIMIT_FILE_SIZE') {
       res.status(400).json({ error: 'File is too large. Maximum size is 10 MB.' });
       return;
     }
@@ -92,14 +92,7 @@ router.post('/decks/:deckId/notes/upload', upload.single('file'), async (req: Re
 // GET /api/decks/:deckId/notes
 router.get('/decks/:deckId/notes', async (req: Request, res: Response): Promise<void> => {
   try {
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
     const result = await pool.query(
       'SELECT id, original_filename, content, created_at FROM notes WHERE deck_id = $1 ORDER BY created_at',

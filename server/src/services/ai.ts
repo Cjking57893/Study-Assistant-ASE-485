@@ -1,5 +1,6 @@
-const HUGGINGFACE_API_URL = 'https://api-inference.huggingface.co/models/distilgpt2';
-const MAX_GENERATED_TOKENS = 500;
+const HUGGINGFACE_CHAT_URL = 'https://router.huggingface.co/v1/chat/completions';
+const DEFAULT_MODEL = 'meta-llama/Llama-3.3-70B-Instruct';
+const MAX_GENERATED_TOKENS = 2048;
 
 interface GeneratedFlashcard {
   question_type: 'multiple_choice' | 'true_false' | 'fill_blank';
@@ -23,20 +24,22 @@ function getApiKey(): string {
   return key;
 }
 
-async function callHuggingFace(prompt: string): Promise<string> {
-  const res = await fetch(HUGGINGFACE_API_URL, {
+async function callHuggingFace(systemPrompt: string, userPrompt: string): Promise<string> {
+  const res = await fetch(HUGGINGFACE_CHAT_URL, {
     method: 'POST',
     headers: {
       'Authorization': `Bearer ${getApiKey()}`,
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      inputs: prompt,
-      parameters: {
-        max_new_tokens: MAX_GENERATED_TOKENS,
-        temperature: 0.7,
-        return_full_text: false,
-      },
+      model: DEFAULT_MODEL,
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: userPrompt },
+      ],
+      max_tokens: MAX_GENERATED_TOKENS,
+      temperature: 0.7,
+      stream: false,
     }),
   });
 
@@ -46,7 +49,7 @@ async function callHuggingFace(prompt: string): Promise<string> {
   }
 
   const data = await res.json();
-  return data[0]?.generated_text ?? '';
+  return data.choices?.[0]?.message?.content ?? '';
 }
 
 function parseFlashcards(raw: string, count: number): GeneratedFlashcard[] {
@@ -60,13 +63,29 @@ function parseFlashcards(raw: string, count: number): GeneratedFlashcard[] {
     if (qaParts.length >= 2) {
       cards.push({
         question_type: 'fill_blank',
-        question: qaParts[0],
+        question: ensureQuestionMark(qaParts[0]),
         answer: qaParts[1],
       });
     }
   }
 
   return cards;
+}
+
+function shuffleArray<T>(arr: T[]): T[] {
+  const shuffled = [...arr];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+}
+
+function ensureAnswerInOptions(answer: string, options: string[]): string[] {
+  const answerLower = answer.toLowerCase().trim();
+  const hasAnswer = options.some((o) => o.toLowerCase().trim() === answerLower);
+  if (hasAnswer) return options;
+  return shuffleArray([...options, answer]);
 }
 
 function parseQuizQuestions(raw: string, count: number): GeneratedQuizQuestion[] {
@@ -78,17 +97,19 @@ function parseQuizQuestions(raw: string, count: number): GeneratedQuizQuestion[]
 
     const parts = line.split('|').map((s) => s.trim()).filter(Boolean);
     if (parts.length >= 3) {
-      const options = parts.slice(2);
+      const answer = parts[1];
+      const rawOptions = parts.slice(2);
+      const options = ensureAnswerInOptions(answer, rawOptions);
       questions.push({
-        question_type: options.length > 0 ? 'multiple_choice' : 'short_answer',
-        question: parts[0],
-        answer: parts[1],
-        options: options.length > 0 ? options : undefined,
+        question_type: 'multiple_choice',
+        question: ensureQuestionMark(parts[0]),
+        answer,
+        options,
       });
     } else if (parts.length === 2) {
       questions.push({
         question_type: 'short_answer',
-        question: parts[0],
+        question: ensureQuestionMark(parts[0]),
         answer: parts[1],
       });
     }
@@ -97,27 +118,38 @@ function parseQuizQuestions(raw: string, count: number): GeneratedQuizQuestion[]
   return questions;
 }
 
+function ensureQuestionMark(question: string): string {
+  const trimmed = question.trim();
+  if (trimmed.endsWith('?')) return trimmed;
+  return trimmed + '?';
+}
+
 function truncateContent(content: string, maxChars: number): string {
   if (content.length <= maxChars) return content;
   return content.slice(0, maxChars) + '...';
 }
 
-const MAX_CONTENT_CHARS = 1000;
+const MAX_CONTENT_CHARS = 75000;
+
+const FLASHCARD_SYSTEM_PROMPT = `You are a study assistant that generates flashcards from notes. Use ONLY information explicitly stated in the provided notes. Do not add any outside knowledge, facts, or details that are not directly in the notes. Output ONLY the flashcards in the exact format specified, with no extra text or explanation.`;
+
+const QUIZ_SYSTEM_PROMPT = `You are a study assistant that generates quiz questions from notes. Use ONLY information explicitly stated in the provided notes. Do not add any outside knowledge, facts, or details that are not directly in the notes. Output ONLY the quiz questions in the exact format specified, with no extra text or explanation.`;
 
 export async function generateFlashcards(
   noteContent: string,
   count: number
 ): Promise<GeneratedFlashcard[]> {
   const truncated = truncateContent(noteContent, MAX_CONTENT_CHARS);
-  const prompt = `Based on the following study notes, generate ${count} flashcard questions and answers. Format each as: Question | Answer (one per line).
+  const userPrompt = `Based on the following study notes, generate exactly ${count} flashcard questions and answers.
+
+Format each flashcard on its own line as: Question | Answer
+
+Do not number them. Do not add any other text.
 
 Notes:
-${truncated}
+${truncated}`;
 
-Flashcards:
-`;
-
-  const raw = await callHuggingFace(prompt);
+  const raw = await callHuggingFace(FLASHCARD_SYSTEM_PROMPT, userPrompt);
   const parsed = parseFlashcards(raw, count);
 
   if (parsed.length === 0) {
@@ -132,15 +164,18 @@ export async function generateQuizQuestions(
   count: number
 ): Promise<GeneratedQuizQuestion[]> {
   const truncated = truncateContent(noteContent, MAX_CONTENT_CHARS);
-  const prompt = `Based on the following study notes, generate ${count} quiz questions with answers. For multiple choice, format as: Question | Answer | Option A | Option B | Option C | Option D (one per line). For short answer, format as: Question | Answer (one per line).
+  const userPrompt = `Based on the following study notes, generate exactly ${count} quiz questions with answers.
+
+For multiple choice questions, format as: Question | Answer | Option A | Option B | Option C | Option D
+The Answer MUST be exactly one of the Options.
+For short answer questions, format as: Question | Answer
+
+Do not number them. Do not add any other text. Mix question types.
 
 Notes:
-${truncated}
+${truncated}`;
 
-Quiz Questions:
-`;
-
-  const raw = await callHuggingFace(prompt);
+  const raw = await callHuggingFace(QUIZ_SYSTEM_PROMPT, userPrompt);
   const parsed = parseQuizQuestions(raw, count);
 
   if (parsed.length === 0) {

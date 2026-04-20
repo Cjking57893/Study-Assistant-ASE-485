@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { api } from '../utils/api';
 import './Login.css';
 
 function Register() {
@@ -24,9 +25,8 @@ function Register() {
       return;
     }
     try {
-      const res = await fetch('/api/auth/register', {
+      const res = await api('/api/auth/register', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, email, password }),
       });
       const data = await res.json();
@@ -52,8 +52,8 @@ function Register() {
           <p className="auth-subtitle">Create your account and start studying smarter.</p>
         </div>
 
-        {error && <div className="auth-error">{error}</div>}
-        {success && <div className="auth-success">{success}</div>}
+        {error && <div className="feedback-error">{error}</div>}
+        {success && <div className="feedback-success">{success}</div>}
 
         <form className="auth-form" onSubmit={handleSubmit}>
           <div className="form-group">
@@ -124,7 +124,7 @@ function Register() {
             </div>
           </div>
 
-          <button type="submit" className="auth-btn">Create Account</button>
+          <button type="submit" className="btn-primary auth-btn">Create Account</button>
         </form>
 
         <div className="auth-footer">

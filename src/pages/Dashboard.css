@@ -69,7 +69,7 @@
 .dashboard-logout-btn:hover {
   color: var(--error);
   border-color: var(--error);
-  background: #fef2f2;
+  background: var(--error-bg);
 }
 
 .dashboard-content {
@@ -173,7 +173,7 @@
 
 .deck-delete-btn:hover {
   color: var(--error);
-  background: #fef2f2;
+  background: var(--error-bg);
 }
 
 .deck-category-badge {
@@ -183,7 +183,7 @@
   font-size: 0.75rem;
   font-weight: 500;
   color: var(--primary);
-  background: rgba(58, 155, 213, 0.1);
+  background: var(--primary-alpha-10);
   margin-bottom: 0.5rem;
 }
 

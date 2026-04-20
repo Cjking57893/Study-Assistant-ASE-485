@@ -20,17 +20,21 @@ function Dashboard() {
   const navigate = useNavigate();
   const [decks, setDecks] = useState<Deck[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
   const [showModal, setShowModal] = useState(false);
   const [editDeck, setEditDeck] = useState<Deck | null>(null);
 
   const loadDecks = async () => {
     try {
+      setError('');
       const res = await api('/api/decks');
       if (res.ok) {
         setDecks(await res.json());
+      } else {
+        setError('Failed to load decks');
       }
     } catch {
-      // Silently fail
+      setError('Network error. Is the server running?');
     } finally {
       setLoading(false);
     }
@@ -45,9 +49,11 @@ function Dashboard() {
       const res = await api(`/api/decks/${deckId}`, { method: 'DELETE' });
       if (res.ok) {
         setDecks((prev) => prev.filter((d) => d.id !== deckId));
+      } else {
+        setError('Failed to delete deck');
       }
     } catch {
-      // Silently fail
+      setError('Network error');
     }
   };
 
@@ -62,6 +68,8 @@ function Dashboard() {
             + Create Deck
           </button>
         </div>
+
+        {error && <div className="feedback-error">{error}</div>}
 
         {loading ? (
           <p className="dashboard-placeholder">Loading...</p>

@@ -1,0 +1,41 @@
+Introduction to Psychology
+
+Psychology is the scientific study of behavior and mental processes.
+
+Major Perspectives in Psychology:
+- Biological: Focuses on how the brain, genetics, and neurotransmitters influence behavior.
+- Behavioral: Studies observable behavior. Founded by John B. Watson. B.F. Skinner developed operant conditioning.
+- Cognitive: Examines internal mental processes like memory, thinking, and problem-solving.
+- Psychodynamic: Based on Sigmund Freud's theories. Emphasizes unconscious motives and childhood experiences.
+- Humanistic: Focuses on personal growth and self-actualization. Key figures: Carl Rogers and Abraham Maslow.
+- Sociocultural: Examines how social and cultural factors influence behavior.
+
+Classical Conditioning (Ivan Pavlov):
+- A learning process where a neutral stimulus becomes associated with a meaningful stimulus.
+- Pavlov's experiment: Dogs learned to salivate at the sound of a bell that was paired with food.
+- Unconditioned Stimulus (US): Food (naturally causes salivation).
+- Unconditioned Response (UR): Salivation in response to food.
+- Conditioned Stimulus (CS): Bell (after pairing with food).
+- Conditioned Response (CR): Salivation in response to the bell alone.
+
+Operant Conditioning (B.F. Skinner):
+- Learning through consequences: reinforcement and punishment.
+- Positive reinforcement: Adding something pleasant to increase behavior (e.g., giving a treat).
+- Negative reinforcement: Removing something unpleasant to increase behavior (e.g., stopping an alarm).
+- Positive punishment: Adding something unpleasant to decrease behavior (e.g., a speeding ticket).
+- Negative punishment: Removing something pleasant to decrease behavior (e.g., taking away screen time).
+
+Maslow's Hierarchy of Needs (bottom to top):
+1. Physiological needs: Food, water, shelter, sleep.
+2. Safety needs: Security, stability, health.
+3. Love and belonging: Friendships, family, romantic relationships.
+4. Esteem needs: Self-confidence, achievement, respect from others.
+5. Self-actualization: Reaching one's full potential, creativity, purpose.
+
+Memory:
+- Sensory memory: Brief storage of sensory information (less than 1 second for visual, 3-4 seconds for auditory).
+- Short-term memory: Holds about 7 items (plus or minus 2) for about 20-30 seconds. Also called working memory.
+- Long-term memory: Potentially unlimited storage. Divided into explicit (declarative) and implicit (procedural) memory.
+- Encoding: Process of getting information into memory.
+- Retrieval: Process of getting information out of memory.
+- Forgetting: Ebbinghaus forgetting curve shows rapid initial forgetting that levels off over time.

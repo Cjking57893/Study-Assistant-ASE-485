@@ -1,20 +1,14 @@
 import { Router, Request, Response } from 'express';
 import pool from '../config/db.js';
 import { validateFlashcard } from '../middleware/validate.js';
+import { verifyDeckOwnership } from '../utils/deck-ownership.js';
 
 const router = Router();
 
 // GET /api/decks/:deckId/flashcards
 router.get('/decks/:deckId/flashcards', async (req: Request, res: Response): Promise<void> => {
   try {
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
     const result = await pool.query(
       'SELECT id, question_type, question, answer, options, created_at FROM flashcards WHERE deck_id = $1 ORDER BY created_at',
@@ -30,14 +24,7 @@ router.get('/decks/:deckId/flashcards', async (req: Request, res: Response): Pro
 // POST /api/decks/:deckId/flashcards
 router.post('/decks/:deckId/flashcards', validateFlashcard, async (req: Request, res: Response): Promise<void> => {
   try {
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
     const { question_type, question, answer, options } = req.body;
     const result = await pool.query(

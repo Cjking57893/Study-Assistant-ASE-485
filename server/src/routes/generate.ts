@@ -1,47 +1,41 @@
 import { Router, Request, Response } from 'express';
-import pool from '../config/db.js';
 import { generateFlashcards, generateQuizQuestions } from '../services/ai.js';
+import { verifyDeckOwnership, fetchNoteContent, handleAiError } from '../utils/deck-ownership.js';
+import pool from '../config/db.js';
 
 const router = Router();
 
 const MIN_GENERATION_COUNT = 1;
 const MAX_GENERATION_COUNT = 20;
 
+function validateGenerationCount(count: number, fieldName: string, res: Response): boolean {
+  if (typeof count !== 'number' || count < MIN_GENERATION_COUNT || count > MAX_GENERATION_COUNT) {
+    res.status(400).json({ error: `${fieldName} must be between ${MIN_GENERATION_COUNT} and ${MAX_GENERATION_COUNT}` });
+    return false;
+  }
+  return true;
+}
+
+function validateNoteId(noteId: unknown, res: Response): noteId is number {
+  if (!noteId || typeof noteId !== 'number') {
+    res.status(400).json({ error: 'noteId is required' });
+    return false;
+  }
+  return true;
+}
+
 // POST /api/decks/:deckId/generate/flashcards
 router.post('/decks/:deckId/generate/flashcards', async (req: Request, res: Response): Promise<void> => {
   try {
     const { noteId, count = 5 } = req.body;
 
-    if (!noteId || typeof noteId !== 'number') {
-      res.status(400).json({ error: 'noteId is required' });
-      return;
-    }
-    if (typeof count !== 'number' || count < MIN_GENERATION_COUNT || count > MAX_GENERATION_COUNT) {
-      res.status(400).json({ error: `count must be between ${MIN_GENERATION_COUNT} and ${MAX_GENERATION_COUNT}` });
-      return;
-    }
+    if (!validateNoteId(noteId, res)) return;
+    if (!validateGenerationCount(count, 'count', res)) return;
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    const noteContent = await fetchNoteContent(noteId, req.user!.userId, res);
+    if (!noteContent) return;
 
-    const noteCheck = await pool.query(
-      `SELECT n.content FROM notes n
-       JOIN decks d ON d.id = n.deck_id
-       WHERE n.id = $1 AND d.user_id = $2`,
-      [noteId, req.user!.userId]
-    );
-    if (noteCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Note not found' });
-      return;
-    }
-
-    const noteContent = noteCheck.rows[0].content;
     const generated = await generateFlashcards(noteContent, count);
 
     const insertedCards = [];
@@ -54,15 +48,8 @@ router.post('/decks/:deckId/generate/flashcards', async (req: Request, res: Resp
     }
 
     res.status(201).json({ flashcards: insertedCards });
-  } catch (error: any) {
-    if (error.message?.includes('HUGGINGFACE_API_KEY')) {
-      res.status(503).json({ error: 'AI service is not configured' });
-      return;
-    }
-    if (error.message?.includes('AI could not generate')) {
-      res.status(422).json({ error: error.message });
-      return;
-    }
+  } catch (error: unknown) {
+    if (handleAiError(error, res)) return;
     console.error('Generate flashcards error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }
@@ -73,40 +60,17 @@ router.post('/decks/:deckId/generate/quiz', async (req: Request, res: Response):
   try {
     const { noteId, title, questionCount = 5 } = req.body;
 
-    if (!noteId || typeof noteId !== 'number') {
-      res.status(400).json({ error: 'noteId is required' });
-      return;
-    }
+    if (!validateNoteId(noteId, res)) return;
     if (!title || typeof title !== 'string' || !title.trim()) {
       res.status(400).json({ error: 'title is required' });
       return;
     }
-    if (typeof questionCount !== 'number' || questionCount < MIN_GENERATION_COUNT || questionCount > MAX_GENERATION_COUNT) {
-      res.status(400).json({ error: `questionCount must be between ${MIN_GENERATION_COUNT} and ${MAX_GENERATION_COUNT}` });
-      return;
-    }
+    if (!validateGenerationCount(questionCount, 'questionCount', res)) return;
+    if (!await verifyDeckOwnership(req.params.deckId, req.user!.userId, res)) return;
 
-    const deckCheck = await pool.query(
-      'SELECT id FROM decks WHERE id = $1 AND user_id = $2',
-      [req.params.deckId, req.user!.userId]
-    );
-    if (deckCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Deck not found' });
-      return;
-    }
+    const noteContent = await fetchNoteContent(noteId, req.user!.userId, res);
+    if (!noteContent) return;
 
-    const noteCheck = await pool.query(
-      `SELECT n.content FROM notes n
-       JOIN decks d ON d.id = n.deck_id
-       WHERE n.id = $1 AND d.user_id = $2`,
-      [noteId, req.user!.userId]
-    );
-    if (noteCheck.rows.length === 0) {
-      res.status(404).json({ error: 'Note not found' });
-      return;
-    }
-
-    const noteContent = noteCheck.rows[0].content;
     const generated = await generateQuizQuestions(noteContent, questionCount);
 
     const quizResult = await pool.query(
@@ -125,15 +89,8 @@ router.post('/decks/:deckId/generate/quiz', async (req: Request, res: Response):
     }
 
     res.status(201).json({ quiz, questions: insertedQuestions });
-  } catch (error: any) {
-    if (error.message?.includes('HUGGINGFACE_API_KEY')) {
-      res.status(503).json({ error: 'AI service is not configured' });
-      return;
-    }
-    if (error.message?.includes('AI could not generate')) {
-      res.status(422).json({ error: error.message });
-      return;
-    }
+  } catch (error: unknown) {
+    if (handleAiError(error, res)) return;
     console.error('Generate quiz error:', error);
     res.status(500).json({ error: 'Internal server error' });
   }

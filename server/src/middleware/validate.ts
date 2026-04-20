@@ -1,7 +1,7 @@
 import { Request, Response, NextFunction } from 'express';
 
 const HAS_NUMBER = /[0-9]/;
-const HAS_SYMBOL = /[!@#$%^&*()_+\-=\[\]{};':"\\|,.<>\/?]/;
+const HAS_SYMBOL = /[!@#$%^&*()_+\-=[\]{};':"\\|,.<>/?]/;
 const VALID_EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 export function validateRegister(req: Request, res: Response, next: NextFunction): void {
