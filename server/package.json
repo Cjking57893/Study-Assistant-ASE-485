@@ -11,6 +11,13 @@
     "test:coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/multer": "^2.0.0",
+    "@types/pdf-parse": "^1.1.5",
+    "@types/pg": "^8.18.0",
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
@@ -20,20 +27,13 @@
     "mammoth": "^1.11.0",
     "multer": "^2.1.0",
     "pdf-parse": "^2.4.5",
-    "pg": "^8.19.0"
+    "pg": "^8.19.0",
+    "typescript": "^5.9.3"
   },
   "devDependencies": {
-    "@types/bcrypt": "^6.0.0",
-    "@types/cors": "^2.8.19",
-    "@types/express": "^5.0.6",
-    "@types/jsonwebtoken": "^9.0.10",
-    "@types/multer": "^2.0.0",
-    "@types/pdf-parse": "^1.1.5",
-    "@types/pg": "^8.18.0",
     "@types/supertest": "^7.2.0",
     "supertest": "^7.2.2",
     "tsx": "^4.21.0",
-    "typescript": "^5.9.3",
     "vitest": "^4.0.18"
   }
 }
