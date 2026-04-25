@@ -36,7 +36,7 @@ app.use('/api', authenticateToken, generateRoutes);
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 app.use(express.static(path.join(__dirname, '../../dist')));
-app.get('*', (_req, res) => {
+app.get('{*path}', (_req, res) => {
   res.sendFile(path.join(__dirname, '../../dist/index.html'));
 });
 
