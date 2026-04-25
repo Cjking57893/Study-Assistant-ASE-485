@@ -1,4 +1,6 @@
 import express from 'express';
+import path from 'path';
+import { fileURLToPath } from 'url';
 import cors from 'cors';
 import authRoutes from './routes/auth.js';
 import categoryRoutes from './routes/categories.js';
@@ -13,7 +15,7 @@ import { authenticateToken } from './middleware/auth.js';
 const app = express();
 
 app.use(cors({
-  origin: 'http://localhost:5173',
+  origin: process.env.CORS_ORIGIN || 'http://localhost:5173',
   credentials: true,
 }));
 app.use(express.json());
@@ -31,5 +33,11 @@ app.use('/api', authenticateToken, quizRoutes);
 app.use('/api/sessions', authenticateToken, sessionRoutes);
 app.use('/api', authenticateToken, noteRoutes);
 app.use('/api', authenticateToken, generateRoutes);
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.join(__dirname, '../../dist')));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, '../../dist/index.html'));
+});
 
 export default app;
